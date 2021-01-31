@@ -1,0 +1,12 @@
+E:\My stuff\FAX\III godina\OPOS2\Zadatak4\OPOS-Lab05 - Dokan biblioteka\OposFileSystem\bin\Debug\OposFileSystem.exe.config
+E:\My stuff\FAX\III godina\OPOS2\Zadatak4\OPOS-Lab05 - Dokan biblioteka\OposFileSystem\bin\Debug\OposFileSystem.exe
+E:\My stuff\FAX\III godina\OPOS2\Zadatak4\OPOS-Lab05 - Dokan biblioteka\OposFileSystem\bin\Debug\OposFileSystem.pdb
+E:\My stuff\FAX\III godina\OPOS2\Zadatak4\OPOS-Lab05 - Dokan biblioteka\OposFileSystem\bin\Debug\DokanNet.dll
+E:\My stuff\FAX\III godina\OPOS2\Zadatak4\OPOS-Lab05 - Dokan biblioteka\OposFileSystem\bin\Debug\de\DokanNet.resources.dll
+E:\My stuff\FAX\III godina\OPOS2\Zadatak4\OPOS-Lab05 - Dokan biblioteka\OposFileSystem\bin\Debug\fr\DokanNet.resources.dll
+E:\My stuff\FAX\III godina\OPOS2\Zadatak4\OPOS-Lab05 - Dokan biblioteka\OposFileSystem\bin\Debug\sv\DokanNet.resources.dll
+E:\My stuff\FAX\III godina\OPOS2\Zadatak4\OPOS-Lab05 - Dokan biblioteka\OposFileSystem\obj\Debug\OposFileSystem.csprojAssemblyReference.cache
+E:\My stuff\FAX\III godina\OPOS2\Zadatak4\OPOS-Lab05 - Dokan biblioteka\OposFileSystem\obj\Debug\OposFileSystem.csproj.CoreCompileInputs.cache
+E:\My stuff\FAX\III godina\OPOS2\Zadatak4\OPOS-Lab05 - Dokan biblioteka\OposFileSystem\obj\Debug\OposFileSystem.csproj.CopyComplete
+E:\My stuff\FAX\III godina\OPOS2\Zadatak4\OPOS-Lab05 - Dokan biblioteka\OposFileSystem\obj\Debug\OposFileSystem.exe
+E:\My stuff\FAX\III godina\OPOS2\Zadatak4\OPOS-Lab05 - Dokan biblioteka\OposFileSystem\obj\Debug\OposFileSystem.pdb
