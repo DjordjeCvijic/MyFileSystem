@@ -24,13 +24,13 @@ namespace OposFileSystem
          * DokanNet.IDokanOperations Interface Reference:
          * https://dokan-dev.github.io/dokan-dotnet-doc/html/interface_dokan_net_1_1_i_dokan_operations.html
          */
-        /* public static void Main()
+         public static void Main()
          {
-             new OposFileSystem().Mount("Y:\\", DokanOptions.DebugMode | DokanOptions.StderrOutput);
-         }*/
+             new MyFileSystem().Mount("Y:\\", DokanOptions.DebugMode | DokanOptions.StderrOutput);
+         }
 
 
-        static void Main(string[] args)
+        /*static void Main(string[] args)
         {
             MyBTree tree = new MyBTree();
             Console.WriteLine("Hello World!");
@@ -52,7 +52,7 @@ namespace OposFileSystem
             tree.searching(2, ref t, tree.root, ref res);
             Console.WriteLine("\nnadjena je " + res.getID() + " " + res.path);
             Console.ReadLine();
-        }
+        }*/
 
     }
 }

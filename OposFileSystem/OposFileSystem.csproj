@@ -47,7 +47,6 @@
     <Compile Include="MyBTree.cs" />
     <Compile Include="MyFile.cs" />
     <Compile Include="MyFileSystem.cs" />
-    <Compile Include="OposFileSystem.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

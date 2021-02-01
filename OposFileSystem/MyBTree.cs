@@ -20,6 +20,7 @@ namespace OposFileSystem
         public static int MIN = 2;
         public TreeNode root;
 
+
         public TreeNode createNode(MyFile file, TreeNode child)
         {
             TreeNode newNode = new TreeNode();
@@ -404,6 +405,14 @@ namespace OposFileSystem
                 }
                 traversal(myNode.link[i]);
             }
+        }
+
+
+        public string getPathFromFileName(string fileName) {
+            string[] tempPath = fileName.Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
+            string tempFilePath = "";
+            for (int x = 0; x < tempPath.Length - 1; x++) tempFilePath += "\\" + tempPath[x];
+            return tempFilePath;
         }
 
 

@@ -10,3 +10,15 @@ E:\My stuff\FAX\III godina\OPOS2\Zadatak4\OPOS-Lab05 - Dokan biblioteka\OposFile
 E:\My stuff\FAX\III godina\OPOS2\Zadatak4\OPOS-Lab05 - Dokan biblioteka\OposFileSystem\obj\Debug\OposFileSystem.csproj.CopyComplete
 E:\My stuff\FAX\III godina\OPOS2\Zadatak4\OPOS-Lab05 - Dokan biblioteka\OposFileSystem\obj\Debug\OposFileSystem.exe
 E:\My stuff\FAX\III godina\OPOS2\Zadatak4\OPOS-Lab05 - Dokan biblioteka\OposFileSystem\obj\Debug\OposFileSystem.pdb
+E:\GIT\MyFileSystem\OposFileSystem\obj\Debug\OposFileSystem.csprojAssemblyReference.cache
+E:\GIT\MyFileSystem\OposFileSystem\obj\Debug\OposFileSystem.csproj.CoreCompileInputs.cache
+E:\GIT\MyFileSystem\OposFileSystem\obj\Debug\OposFileSystem.exe
+E:\GIT\MyFileSystem\OposFileSystem\obj\Debug\OposFileSystem.pdb
+E:\GIT\MyFileSystem\OposFileSystem\bin\Debug\OposFileSystem.exe.config
+E:\GIT\MyFileSystem\OposFileSystem\bin\Debug\OposFileSystem.exe
+E:\GIT\MyFileSystem\OposFileSystem\bin\Debug\OposFileSystem.pdb
+E:\GIT\MyFileSystem\OposFileSystem\bin\Debug\DokanNet.dll
+E:\GIT\MyFileSystem\OposFileSystem\bin\Debug\de\DokanNet.resources.dll
+E:\GIT\MyFileSystem\OposFileSystem\bin\Debug\fr\DokanNet.resources.dll
+E:\GIT\MyFileSystem\OposFileSystem\bin\Debug\sv\DokanNet.resources.dll
+E:\GIT\MyFileSystem\OposFileSystem\obj\Debug\OposFileSystem.csproj.CopyComplete

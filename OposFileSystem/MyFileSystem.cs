@@ -15,7 +15,15 @@ namespace OposFileSystem
         long totalNumberOfBytes = 536_870_912;
         long totalNumberOfFreeBytes = 536_870_912;
         MyBTree bTree = new MyBTree();
-        private  Dictionary<string, int> filesDictionary = new Dictionary<string, int>();
+        private Dictionary<string, int> filesDictionary = new Dictionary<string, int>();
+
+        public MyFileSystem(){
+            MyFile newFile = new MyFile("\\");
+            filesDictionary.Add("\\", newFile.getID());
+            bTree.insertion(newFile);
+        }
+        
+      
 
         public NtStatus CreateFile(string fileName, DokanNet.FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, IDokanFileInfo info)
         {
@@ -38,8 +46,9 @@ namespace OposFileSystem
                 {
 
                     //MyTree.AddNodeInTree(tree, fileName, null);
-                    MyFile newFile = new MyFile(fileName);
-                    filesDictionary.Add(fileName, newFile.getID());
+                    string filePath = bTree.getPathFromFileName(fileName);
+                    MyFile newFile = new MyFile(filePath);
+                    filesDictionary.Add(filePath, newFile.getID());
                     bTree.insertion(newFile);
 
                 }
@@ -47,9 +56,10 @@ namespace OposFileSystem
                 {
                     if (Path.GetExtension(fileName).Length != 4) return NtStatus.ObjectNameInvalid;
                     byte[] arr = new byte[0];
-                    MyFile newFile = new MyFile(fileName);
+                    string filePath = bTree.getPathFromFileName(fileName);
+                    MyFile newFile = new MyFile(filePath);
                     newFile.setData(arr);
-                    filesDictionary.Add(fileName, newFile.getID());
+                    filesDictionary.Add(filePath, newFile.getID());
                     bTree.insertion(newFile);
 
                 }
@@ -59,68 +69,115 @@ namespace OposFileSystem
 
         public void Cleanup(string fileName, IDokanFileInfo info)
         {
-            throw new NotImplementedException();
+            if (info.DeleteOnClose == true)
+            {
+                // TODO: Delete file.
+                filesDictionary.Remove(fileName);
+
+                int fileId = filesDictionary[fileName];
+                bTree.deletion(fileId, bTree.root);
+            }
         }
 
         public void CloseFile(string fileName, IDokanFileInfo info)
         {
-            throw new NotImplementedException();
+           
         }
 
         public NtStatus ReadFile(string fileName, byte[] buffer, out int bytesRead, long offset, IDokanFileInfo info)
         {
-            throw new NotImplementedException();
+            int fileId = filesDictionary[fileName];
+            MyFile resFile = null;
+            int tmp = 3;
+            bTree.searching(fileId, ref tmp, bTree.root, ref resFile);
+
+            if (resFile == null || resFile.getData() == null)
+            {
+                bytesRead = 0;
+                return NtStatus.Success;
+            }
+
+            byte[] file = resFile.getData();
+            int i = 0;
+            for (i = 0; i < file.Length && i < buffer.Length; ++i)
+                buffer[i] = file[i];
+            bytesRead = i;
+            return NtStatus.Success;
         }
 
         public NtStatus WriteFile(string fileName, byte[] buffer, out int bytesWritten, long offset, IDokanFileInfo info)
         {
-            throw new NotImplementedException();
+            byte[] file = new byte[buffer.Length];
+            int i = 0;
+            for (i = 0; i < buffer.Length; ++i)
+                file[i] = buffer[i];
+
+            int fileId = filesDictionary[fileName];
+            MyFile resFile = null;
+            int tmp = 3;
+            bTree.searching(fileId, ref tmp, bTree.root, ref resFile);
+
+            resFile.setData(file);
+            bytesWritten = i;
+            if ((resFile.getData().Length + buffer.Length) > 32 * 1024) return NtStatus.FileTooLarge;
+
+            freeBytesAvailable -= bytesWritten;
+            totalNumberOfFreeBytes -= bytesWritten;
+            return NtStatus.Success;
+
         }
 
         public NtStatus FlushFileBuffers(string fileName, IDokanFileInfo info)
         {
-            throw new NotImplementedException();
+            return NtStatus.Error;
         }
 
         public NtStatus GetFileInformation(string fileName, out FileInformation fileInfo, IDokanFileInfo info)
         {
-            int fileId = filesDictionary[fileName];
-            MyFile resFile = null;
-            int tmp = 3;
-            bTree.searching(2, ref tmp, bTree.root, ref resFile);
-            if (resFile == null)
-            {
+            if (!filesDictionary.ContainsKey(fileName)) {
                 fileInfo = default(FileInformation);
+                return NtStatus.Error;
+            }
 
-                /*if(resFile!=null)
-                    resFile.setFileInfo(fileInfo);*///ja mislim da ovo ne treba jer nema tog faila;
-                return NtStatus.Error; 
-            }
-            if (resFile.getData() == null)//to znaci da je direktorijum
-            {
-                fileInfo = new FileInformation()
+                int fileId = filesDictionary[fileName];
+                MyFile resFile = null;
+                int tmp = 3;
+                bTree.searching(fileId, ref tmp, bTree.root, ref resFile);
+                if (resFile == null)
                 {
-                    FileName = Path.GetFileName(fileName),
-                    Attributes = FileAttributes.Directory,
-                    CreationTime = null,
-                    LastWriteTime = null
-                };
-                resFile.setFileInfo(fileInfo);
-            }
-            else
-            {
+                    fileInfo = default(FileInformation);
 
-                fileInfo = new FileInformation()
+                    /*if(resFile!=null)
+                        resFile.setFileInfo(fileInfo);*///ja mislim da ovo ne treba jer nema tog faila;
+                    return NtStatus.Error;
+                }
+                if (resFile.getData() == null)//to znaci da je direktorijum
                 {
-                    FileName = Path.GetFileName(fileName),
-                    Length = resFile.getData().Length,
-                    Attributes = FileAttributes.Normal,
-                    CreationTime = DateTime.Now,
-                    LastWriteTime = DateTime.Now
-                };
-                resFile.setFileInfo(fileInfo);
-            }
-            return NtStatus.Success;
+                    fileInfo = new FileInformation()
+                    {
+                        FileName = Path.GetFileName(fileName),
+                        Attributes = FileAttributes.Directory,
+                        CreationTime = null,
+                        LastWriteTime = null
+                    };
+                    resFile.setFileInfo(fileInfo);
+                }
+                else
+                {
+
+                    fileInfo = new FileInformation()
+                    {
+                        FileName = Path.GetFileName(fileName),
+                        Length = resFile.getData().Length,
+                        Attributes = FileAttributes.Normal,
+                        CreationTime = DateTime.Now,
+                        LastWriteTime = DateTime.Now
+                    };
+                    resFile.setFileInfo(fileInfo);
+                }
+                return NtStatus.Success;
+            
+
         }
 
         public NtStatus FindFiles(string fileName, out IList<FileInformation> files, IDokanFileInfo info)
@@ -130,26 +187,34 @@ namespace OposFileSystem
             int fileId = filesDictionary[fileName];
             TreeNode resNode = null;
             int tmp = 3;
-            bTree.searchingForNode(2, ref tmp, bTree.root, ref resNode);
+            bTree.searchingForNode(fileId, ref tmp, bTree.root, ref resNode);
             IList<FileInformation> filesInfoTmp = new List<FileInformation>();
 
             //if (resFile == null) NtStatus.Error;
+            if (resNode.files == null) {
+                files = filesInfoTmp;
+                return NtStatus.Success;
+            }
             foreach (MyFile file in resNode.files)
             {
-                if (file.getData() == null)
+                if(file != null)//jer se moze desiti da prvog nema a drugog ima
                 {
-                    FileInformation fileInfo = new FileInformation();
-                    fileInfo.Attributes = FileAttributes.Directory;
-                    fileInfo.FileName = Path.GetFileName(file.path);
-                    filesInfoTmp.Add(fileInfo);
+                    if (file.getData() == null)
+                    {
+                        FileInformation fileInfo = new FileInformation();
+                        fileInfo.Attributes = FileAttributes.Directory;
+                        fileInfo.FileName = Path.GetFileName(file.path);
+                        filesInfoTmp.Add(fileInfo);
+                    }
+                    else
+                    {
+                        FileInformation fileInfo = new FileInformation();
+                        fileInfo.FileName = Path.GetFileName(file.path);
+                        fileInfo.Length = file.getData().Length;
+                        filesInfoTmp.Add(fileInfo);
+                    }
                 }
-                else
-                {
-                    FileInformation fileInfo = new FileInformation();
-                    fileInfo.FileName = Path.GetFileName(file.path);
-                    fileInfo.Length = file.getData().Length;
-                    filesInfoTmp.Add(fileInfo);
-                }
+                
             }
             files = filesInfoTmp;
             return NtStatus.Success;
@@ -157,12 +222,13 @@ namespace OposFileSystem
 
         public NtStatus FindFilesWithPattern(string fileName, string searchPattern, out IList<FileInformation> files, IDokanFileInfo info)
         {
-            throw new NotImplementedException();
+            files = new FileInformation[0];
+            return DokanResult.NotImplemented;
         }
 
         public NtStatus SetFileAttributes(string fileName, FileAttributes attributes, IDokanFileInfo info)
         {
-            throw new NotImplementedException();
+            return NtStatus.Success;
         }
 
         public NtStatus SetFileTime(string fileName, DateTime? creationTime, DateTime? lastAccessTime, DateTime? lastWriteTime, IDokanFileInfo info)
@@ -170,7 +236,7 @@ namespace OposFileSystem
             int fileId = filesDictionary[fileName];
             MyFile resFile = null;
             int tmp = 3;
-            bTree.searching(2, ref tmp, bTree.root, ref resFile);
+            bTree.searching(fileId, ref tmp, bTree.root, ref resFile);
 
             //informations[fileName] = new FileInformation()
             FileInformation newInfo= new FileInformation()
@@ -188,72 +254,90 @@ namespace OposFileSystem
 
         public NtStatus DeleteFile(string fileName, IDokanFileInfo info)
         {
-            throw new NotImplementedException();
+            if (!info.IsDirectory)
+                return DokanResult.Error;
+
+            info.DeleteOnClose = true;
+            return NtStatus.Success;
         }
 
         public NtStatus DeleteDirectory(string fileName, IDokanFileInfo info)
         {
-            throw new NotImplementedException();
+            if (!info.IsDirectory)
+                return DokanResult.Error;
+
+            info.DeleteOnClose = true;
+            return NtStatus.Success;
         }
 
         public NtStatus MoveFile(string oldName, string newName, bool replace, IDokanFileInfo info)
         {
-            throw new NotImplementedException();
+            return NtStatus.Success;//nije gotovoooo
         }
 
         public NtStatus SetEndOfFile(string fileName, long length, IDokanFileInfo info)
         {
-            throw new NotImplementedException();
+            return NtStatus.Error;
         }
 
         public NtStatus SetAllocationSize(string fileName, long length, IDokanFileInfo info)
         {
-            throw new NotImplementedException();
+            return NtStatus.Error;
         }
 
         public NtStatus LockFile(string fileName, long offset, long length, IDokanFileInfo info)
         {
-            throw new NotImplementedException();
+            return NtStatus.Error;
         }
 
         public NtStatus UnlockFile(string fileName, long offset, long length, IDokanFileInfo info)
         {
-            throw new NotImplementedException();
+            return NtStatus.Error;
         }
 
         public NtStatus GetDiskFreeSpace(out long freeBytesAvailable, out long totalNumberOfBytes, out long totalNumberOfFreeBytes, IDokanFileInfo info)
         {
-            throw new NotImplementedException();
+            freeBytesAvailable = this.freeBytesAvailable;
+
+            totalNumberOfBytes = this.totalNumberOfBytes;
+            totalNumberOfFreeBytes = this.totalNumberOfFreeBytes;
+            return NtStatus.Success;
         }
 
         public NtStatus GetVolumeInformation(out string volumeLabel, out FileSystemFeatures features, out string fileSystemName, out uint maximumComponentLength, IDokanFileInfo info)
         {
-            throw new NotImplementedException();
+            volumeLabel = "MyFileSystem";
+            features = FileSystemFeatures.None;
+            fileSystemName = string.Empty;
+            maximumComponentLength = 255;//dodao
+            return NtStatus.Success;
         }
 
         public NtStatus GetFileSecurity(string fileName, out FileSystemSecurity security, AccessControlSections sections, IDokanFileInfo info)
         {
-            throw new NotImplementedException();
+            security = null;
+            return NtStatus.Error;
         }
 
         public NtStatus SetFileSecurity(string fileName, FileSystemSecurity security, AccessControlSections sections, IDokanFileInfo info)
         {
-            throw new NotImplementedException();
+            return NtStatus.Error;
         }
 
         public NtStatus Mounted(IDokanFileInfo info)
         {
-            throw new NotImplementedException();
+            return NtStatus.Success;
         }
 
         public NtStatus Unmounted(IDokanFileInfo info)
         {
-            throw new NotImplementedException();
+            return NtStatus.Success;
         }
 
         public NtStatus FindStreams(string fileName, out IList<FileInformation> streams, IDokanFileInfo info)
         {
-            throw new NotImplementedException();
+            streams = new FileInformation[0];
+            return DokanResult.NotImplemented;
         }
     }
 }
