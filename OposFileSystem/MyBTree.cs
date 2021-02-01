@@ -6,21 +6,7 @@ using System.Text;
 //namespace BTree
 namespace OposFileSystem
 {
-    class MyFile
-    {
-        public static int i = 1;
-        public string path;
-        private int id;
-        public MyFile(String p)
-        {
-            path = p;
-            id = i++;
-        }
-        public int getID()
-        {
-            return id;
-        }
-    }
+    
     class TreeNode
     {
         public MyFile[] files = new MyFile[MyBTree.MAX + 1];//ima jedan vise jer se moze dodati ali se onda balansira
@@ -379,6 +365,31 @@ namespace OposFileSystem
             searching(id, ref pos, myNode.link[pos], ref res);
             return;
         }
+        public void searchingForNode(int id, ref int pos, TreeNode myNode, ref TreeNode res)
+        {
+            if (myNode == null)
+            {
+                return;
+            }
+
+            if (id < myNode.files[1].getID())
+            {
+                pos = 0;
+            }
+            else
+            {
+                for (pos = myNode.count;
+                    (id < myNode.files[pos].getID() && pos > 1); (pos)--) ;
+                if (id == myNode.files[pos].getID())
+                {
+                    //Console.WriteLine("Given data is Found\n");
+                    res = myNode;
+                    return;
+                }
+            }
+            searchingForNode(id, ref pos, myNode.link[pos], ref res);
+            return;
+        }
         /* B-Tree Traversal */
         public void traversal(TreeNode myNode)
         {
@@ -394,6 +405,7 @@ namespace OposFileSystem
                 traversal(myNode.link[i]);
             }
         }
+
 
 
     }

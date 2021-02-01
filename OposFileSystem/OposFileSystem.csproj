@@ -44,8 +44,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Main.cs" />
-    <Compile Include="File.cs" />
     <Compile Include="MyBTree.cs" />
+    <Compile Include="MyFile.cs" />
     <Compile Include="MyFileSystem.cs" />
     <Compile Include="OposFileSystem.cs" />
   </ItemGroup>
