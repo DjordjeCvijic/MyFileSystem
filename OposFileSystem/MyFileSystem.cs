@@ -45,10 +45,10 @@ namespace OposFileSystem
                 if (attributes == FileAttributes.Directory || info.IsDirectory)
                 {
 
-                    //MyTree.AddNodeInTree(tree, fileName, null);
-                    string filePath = bTree.getPathFromFileName(fileName);
-                    MyFile newFile = new MyFile(filePath);
-                    filesDictionary.Add(filePath, newFile.getID());
+                   // string filePath = bTree.getPathFromFileName(fileName);
+
+                    MyFile newFile = new MyFile(fileName);
+                    filesDictionary.Add(fileName, newFile.getID());
                     bTree.insertion(newFile);
 
                 }
@@ -56,10 +56,10 @@ namespace OposFileSystem
                 {
                     if (Path.GetExtension(fileName).Length != 4) return NtStatus.ObjectNameInvalid;
                     byte[] arr = new byte[0];
-                    string filePath = bTree.getPathFromFileName(fileName);
-                    MyFile newFile = new MyFile(filePath);
+                    //string filePath = bTree.getPathFromFileName(fileName);
+                    MyFile newFile = new MyFile(fileName);
                     newFile.setData(arr);
-                    filesDictionary.Add(filePath, newFile.getID());
+                    filesDictionary.Add(fileName, newFile.getID());
                     bTree.insertion(newFile);
 
                 }
@@ -72,10 +72,9 @@ namespace OposFileSystem
             if (info.DeleteOnClose == true)
             {
                 // TODO: Delete file.
-                filesDictionary.Remove(fileName);
-
                 int fileId = filesDictionary[fileName];
                 bTree.deletion(fileId, bTree.root);
+                filesDictionary.Remove(fileName);
             }
         }
 
@@ -182,7 +181,42 @@ namespace OposFileSystem
 
         public NtStatus FindFiles(string fileName, out IList<FileInformation> files, IDokanFileInfo info)
         {
+            IList<FileInformation> filesInfoTmp = new List<FileInformation>();
 
+            List<string> keyList = new List<string>(this.filesDictionary.Keys);
+            foreach(string path in keyList)
+            {
+                int fileNameLenght = fileName.Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries).Length;
+                int pathLenght = path.Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries).Length;
+                if (path.Contains(fileName) && path!=fileName && pathLenght== fileNameLenght+1) {
+                    int fileId = filesDictionary[path];
+                    MyFile resFile = null;
+                    int tmp = 3;
+                    bTree.searching(fileId, ref tmp, bTree.root, ref resFile);
+                    if (resFile.getData() == null)
+                    {
+                        FileInformation fileInfo = new FileInformation();
+                        fileInfo.Attributes = FileAttributes.Directory;
+                        fileInfo.FileName = Path.GetFileName(resFile.path);
+                        filesInfoTmp.Add(fileInfo);
+                    }
+                    else
+                    {
+                        FileInformation fileInfo = new FileInformation();
+                        fileInfo.FileName = Path.GetFileName(resFile.path);
+                        fileInfo.Length = resFile.getData().Length;
+                        filesInfoTmp.Add(fileInfo);
+                    }
+                }
+                
+
+            }
+            files = filesInfoTmp;
+            return NtStatus.Success;
+
+
+
+            /*
             //files = MyTree.GetFilesOnLocation(tree, fileName);
             int fileId = filesDictionary[fileName];
             TreeNode resNode = null;
@@ -217,7 +251,7 @@ namespace OposFileSystem
                 
             }
             files = filesInfoTmp;
-            return NtStatus.Success;
+            return NtStatus.Success;*/
         }
 
         public NtStatus FindFilesWithPattern(string fileName, string searchPattern, out IList<FileInformation> files, IDokanFileInfo info)
