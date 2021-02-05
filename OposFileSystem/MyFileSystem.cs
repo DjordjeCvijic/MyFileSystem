@@ -36,12 +36,13 @@ namespace OposFileSystem
                 //string temp = MyTree.GetFileName(fileName);
 
                 if (fileName.Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries).Length > 12) return NtStatus.Error;
+                if (filesDictionary.ContainsKey(fileName)) return NtStatus.Error;
                 //MyTree node = MyTree.GetFileDir(tree, fileName);
                 //if (temp.Length > 25) return NtStatus.ObjectNameInvalid;
-               /* if (node.Nodes.Count == 16)
-                {
-                    return NtStatus.FileTooLarge;
-                }*/
+                    /* if (node.Nodes.Count == 16)
+                     {
+                         return NtStatus.FileTooLarge;
+                     }*/
                 if (attributes == FileAttributes.Directory || info.IsDirectory)
                 {
 
@@ -172,7 +173,7 @@ namespace OposFileSystem
                         CreationTime = DateTime.Now,
                         LastWriteTime = DateTime.Now
                     };
-                    resFile.setFileInfo(fileInfo);
+                   // resFile.setFileInfo(fileInfo);
                 }
                 return NtStatus.Success;
             
@@ -306,6 +307,20 @@ namespace OposFileSystem
 
         public NtStatus MoveFile(string oldName, string newName, bool replace, IDokanFileInfo info)
         {
+            int fileId = filesDictionary[oldName];
+            MyFile oldFile = null;
+            int tmp = 3;
+            bTree.searching(fileId, ref tmp, bTree.root, ref oldFile);
+            if (Path.GetFileName(newName).Length > 25) return NtStatus.Error;
+            MyFile newFile = new MyFile(newName);
+            if(oldFile.getData()!=null)
+                newFile.setData(oldFile.getData());
+            filesDictionary.Add(newName, newFile.getID());
+            bTree.insertion(newFile);
+
+            //Tree.deletion(fileId, bTree.root);
+            filesDictionary.Remove(oldName);
+
             return NtStatus.Success;//nije gotovoooo
         }
 
