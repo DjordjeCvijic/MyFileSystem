@@ -17,6 +17,7 @@ namespace OposFileSystem
         {
             path = p;
             id = i++;
+            fileInfo = new FileInformation();
         }
         public int getID()
         {

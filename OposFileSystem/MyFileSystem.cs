@@ -17,13 +17,14 @@ namespace OposFileSystem
         MyBTree bTree = new MyBTree();
         private Dictionary<string, int> filesDictionary = new Dictionary<string, int>();
 
-        public MyFileSystem(){
+        public MyFileSystem()
+        {
             MyFile newFile = new MyFile("\\");
             filesDictionary.Add("\\", newFile.getID());
             bTree.insertion(newFile);
         }
-        
-      
+
+
 
         public NtStatus CreateFile(string fileName, DokanNet.FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, IDokanFileInfo info)
         {
@@ -39,14 +40,14 @@ namespace OposFileSystem
                 if (filesDictionary.ContainsKey(fileName)) return NtStatus.Error;
                 //MyTree node = MyTree.GetFileDir(tree, fileName);
                 //if (temp.Length > 25) return NtStatus.ObjectNameInvalid;
-                    /* if (node.Nodes.Count == 16)
-                     {
-                         return NtStatus.FileTooLarge;
-                     }*/
+                /* if (node.Nodes.Count == 16)
+                 {
+                     return NtStatus.FileTooLarge;
+                 }*/
                 if (attributes == FileAttributes.Directory || info.IsDirectory)
                 {
 
-                   // string filePath = bTree.getPathFromFileName(fileName);
+                    // string filePath = bTree.getPathFromFileName(fileName);
 
                     MyFile newFile = new MyFile(fileName);
                     filesDictionary.Add(fileName, newFile.getID());
@@ -81,7 +82,7 @@ namespace OposFileSystem
 
         public void CloseFile(string fileName, IDokanFileInfo info)
         {
-           
+
         }
 
         public NtStatus ReadFile(string fileName, byte[] buffer, out int bytesRead, long offset, IDokanFileInfo info)
@@ -96,6 +97,10 @@ namespace OposFileSystem
                 bytesRead = 0;
                 return NtStatus.Success;
             }
+            //dodao
+            FileInformation fInfo = resFile.getFileInfo();
+            fInfo.LastAccessTime = DateTime.Now;
+            resFile.setFileInfo(fInfo);
 
             byte[] file = resFile.getData();
             int i = 0;
@@ -118,6 +123,11 @@ namespace OposFileSystem
             bTree.searching(fileId, ref tmp, bTree.root, ref resFile);
 
             resFile.setData(file);
+
+            //dodao:
+            FileInformation fInfo = resFile.getFileInfo();
+            fInfo.LastWriteTime = DateTime.Now;
+            resFile.setFileInfo(fInfo);
             bytesWritten = i;
             if ((resFile.getData().Length + buffer.Length) > 32 * 1024) return NtStatus.FileTooLarge;
 
@@ -134,49 +144,57 @@ namespace OposFileSystem
 
         public NtStatus GetFileInformation(string fileName, out FileInformation fileInfo, IDokanFileInfo info)
         {
-            if (!filesDictionary.ContainsKey(fileName)) {
+            if (!filesDictionary.ContainsKey(fileName))
+            {
                 fileInfo = default(FileInformation);
                 return NtStatus.Error;
             }
 
-                int fileId = filesDictionary[fileName];
-                MyFile resFile = null;
-                int tmp = 3;
-                bTree.searching(fileId, ref tmp, bTree.root, ref resFile);
-                if (resFile == null)
-                {
-                    fileInfo = default(FileInformation);
+            int fileId = filesDictionary[fileName];
+            MyFile resFile = null;
+            int tmp = 3;
+            bTree.searching(fileId, ref tmp, bTree.root, ref resFile);
+            if (resFile == null)
+            {
+                fileInfo = default(FileInformation);
 
-                    /*if(resFile!=null)
-                        resFile.setFileInfo(fileInfo);*///ja mislim da ovo ne treba jer nema tog faila;
-                    return NtStatus.Error;
-                }
-                if (resFile.getData() == null)//to znaci da je direktorijum
+                /*if(resFile!=null)
+                    resFile.setFileInfo(fileInfo);*///ja mislim da ovo ne treba jer nema tog faila;
+                return NtStatus.Error;
+            }
+            if (resFile.getData() == null)//to znaci da je direktorijum
+            {
+                fileInfo = new FileInformation()
                 {
-                    fileInfo = new FileInformation()
-                    {
-                        FileName = Path.GetFileName(fileName),
-                        Attributes = FileAttributes.Directory,
-                        CreationTime = null,
-                        LastWriteTime = null
-                    };
-                    resFile.setFileInfo(fileInfo);
-                }
-                else
-                {
+                    FileName = Path.GetFileName(fileName),
+                    Attributes = FileAttributes.Directory,
+                    CreationTime = resFile.getFileInfo().CreationTime ?? DateTime.Now,
+                    LastWriteTime = null
+                };
+                resFile.setFileInfo(fileInfo);
+            }
+            else
+            {
 
-                    fileInfo = new FileInformation()
-                    {
-                        FileName = Path.GetFileName(fileName),
-                        Length = resFile.getData().Length,
-                        Attributes = FileAttributes.Normal,
-                        CreationTime = DateTime.Now,
-                        LastWriteTime = DateTime.Now
-                    };
-                   // resFile.setFileInfo(fileInfo);
-                }
-                return NtStatus.Success;
-            
+                fileInfo = new FileInformation()
+                {
+                    /*FileName = Path.GetFileName(fileName),
+                    Length = resFile.getData().Length,
+                    Attributes = FileAttributes.Normal,
+                    CreationTime = DateTime.Now,
+                    LastWriteTime = DateTime.Now*/
+
+                    FileName = Path.GetFileName(fileName),
+                    Length = resFile.getData().Length,
+                    Attributes = FileAttributes.Normal,
+                    CreationTime = resFile.getFileInfo().CreationTime ?? DateTime.Now,
+                    LastWriteTime = resFile.getFileInfo().LastWriteTime,
+                    LastAccessTime = resFile.getFileInfo().LastAccessTime
+                };
+                resFile.setFileInfo(fileInfo);
+            }
+            return NtStatus.Success;
+
 
         }
 
@@ -185,11 +203,12 @@ namespace OposFileSystem
             IList<FileInformation> filesInfoTmp = new List<FileInformation>();
 
             List<string> keyList = new List<string>(this.filesDictionary.Keys);
-            foreach(string path in keyList)
+            foreach (string path in keyList)
             {
                 int fileNameLenght = fileName.Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries).Length;
                 int pathLenght = path.Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries).Length;
-                if (path.Contains(fileName) && path!=fileName && pathLenght== fileNameLenght+1) {
+                if (path.Contains(fileName) && path != fileName && pathLenght == fileNameLenght + 1)
+                {
                     int fileId = filesDictionary[path];
                     MyFile resFile = null;
                     int tmp = 3;
@@ -199,17 +218,27 @@ namespace OposFileSystem
                         FileInformation fileInfo = new FileInformation();
                         fileInfo.Attributes = FileAttributes.Directory;
                         fileInfo.FileName = Path.GetFileName(resFile.path);
+                        fileInfo.CreationTime = resFile.getFileInfo().CreationTime;
                         filesInfoTmp.Add(fileInfo);
                     }
                     else
                     {
-                        FileInformation fileInfo = new FileInformation();
+                        /*FileInformation fileInfo = new FileInformation();
                         fileInfo.FileName = Path.GetFileName(resFile.path);
                         fileInfo.Length = resFile.getData().Length;
+                        filesInfoTmp.Add(fileInfo);*/
+
+                        FileInformation fileInfo = new FileInformation();
+                        fileInfo.FileName = Path.GetFileName(resFile.path);
+                        fileInfo.Attributes = resFile.getFileInfo().Attributes;
+                        fileInfo.Length = resFile.getFileInfo().Length;
+                        fileInfo.CreationTime = resFile.getFileInfo().CreationTime;
+                        fileInfo.LastAccessTime = resFile.getFileInfo().LastAccessTime;
+                        fileInfo.LastWriteTime = resFile.getFileInfo().LastWriteTime;
                         filesInfoTmp.Add(fileInfo);
                     }
                 }
-                
+
 
             }
             files = filesInfoTmp;
@@ -274,7 +303,7 @@ namespace OposFileSystem
             bTree.searching(fileId, ref tmp, bTree.root, ref resFile);
 
             //informations[fileName] = new FileInformation()
-            FileInformation newInfo= new FileInformation()
+            FileInformation newInfo = new FileInformation()
             {
                 FileName = resFile.getFileInfo().FileName,
                 Attributes = resFile.getFileInfo().Attributes,
@@ -313,7 +342,7 @@ namespace OposFileSystem
             bTree.searching(fileId, ref tmp, bTree.root, ref oldFile);
             if (Path.GetFileName(newName).Length > 25) return NtStatus.Error;
             MyFile newFile = new MyFile(newName);
-            if(oldFile.getData()!=null)
+            if (oldFile.getData() != null)
                 newFile.setData(oldFile.getData());
             filesDictionary.Add(newName, newFile.getID());
             bTree.insertion(newFile);
