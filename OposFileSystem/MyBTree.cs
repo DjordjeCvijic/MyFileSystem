@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Text;
 
 
-//namespace BTree
 namespace OposFileSystem
 {
     
     class TreeNode
     {
-        public MyFile[] files = new MyFile[MyBTree.MAX + 1];//ima jedan vise jer se moze dodati ali se onda balansira
+        public MyFile[] files = new MyFile[MyBTree.MAX + 1];
         public int count;
         public TreeNode[] link = new TreeNode[MyBTree.MAX + 1];
     }
@@ -30,11 +29,11 @@ namespace OposFileSystem
             newNode.link[1] = child;
             return newNode;
         }
-        /* Places the value in appropriate position */
+       
         public void addValToNode(MyFile file, int pos, ref TreeNode node, ref TreeNode child)
         {
             int j = node.count;
-            while (j > pos)//ide unazad odmah da stavi na odg poziciju
+            while (j > pos)
             {
                 node.files[j + 1] = node.files[j];
                 node.link[j + 1] = node.link[j];
@@ -44,7 +43,7 @@ namespace OposFileSystem
             node.link[j + 1] = child;
             node.count++;
         }
-        /* split the node */
+        
         public void splitNode(MyFile file, ref MyFile pval, int pos, TreeNode node, TreeNode child, ref TreeNode newNode)
         {
             int median, j;
@@ -56,7 +55,7 @@ namespace OposFileSystem
 
             newNode = new TreeNode();
             j = median + 1;
-            while (j <= MAX)//petlja za dizanje brojeva
+            while (j <= MAX)
             {
                 newNode.files[j - median] = node.files[j];
                 newNode.link[j - median] = node.link[j];
@@ -77,7 +76,7 @@ namespace OposFileSystem
             newNode.link[0] = node.link[node.count];
             node.count--;
         }
-        /* sets the value val in the node */
+        
         public int setValueInNode(MyFile file, ref MyFile pval, TreeNode node, ref TreeNode child)
         {
 
@@ -89,13 +88,13 @@ namespace OposFileSystem
                 return 1;
             }
 
-            if (file.getID() < node.files[1].getID())//gleda da li fa ga stavi na 0 poziciju
+            if (file.getID() < node.files[1].getID())
             {
                 pos = 0;
             }
             else
             {
-                for (pos = node.count; (file.getID() < node.files[pos].getID() && pos > 1); pos--) ;//ide opet unazad da nadje mjesto
+                for (pos = node.count; (file.getID() < node.files[pos].getID() && pos > 1); pos--) ;
 
                 if (file.getID() == node.files[pos].getID())
                 {
@@ -103,7 +102,7 @@ namespace OposFileSystem
                     return 0;
                 }
             }
-            if (setValueInNode(file, ref pval, node.link[pos], ref child) == 1)//prerpaviti da metoda vraca true i folse
+            if (setValueInNode(file, ref pval, node.link[pos], ref child) == 1)
             {
                 if (node.count < MAX)
                 {
@@ -118,7 +117,7 @@ namespace OposFileSystem
             return 0;
         }
 
-        /* insert val in B-Tree */
+       
         public void insertion(MyFile file)
         {
             int flag;
@@ -126,10 +125,10 @@ namespace OposFileSystem
             TreeNode child = null;
 
             flag = setValueInNode(file, ref i, root, ref child);
-            if (flag == 1)//vraca ejdinicu ako root ne postoji
+            if (flag == 1)
                 root = createNode(i, child);
         }
-        /* copy successor for the value to be deleted */
+        
         public void copySuccessor(TreeNode myNode, int pos)
         {
             TreeNode dummy;
@@ -140,7 +139,7 @@ namespace OposFileSystem
             myNode.files[pos] = dummy.files[1];
 
         }
-        /* removes the value from the given node and rearrange values */
+        
         public void removeVal(TreeNode myNode, int pos)
         {
             int i = pos + 1;
@@ -152,7 +151,7 @@ namespace OposFileSystem
             }
             myNode.count--;
         }
-        /* shifts value from parent to right child */
+       
         public void doRightShift(TreeNode myNode, int pos)
         {
             TreeNode x = myNode.link[pos];
@@ -174,7 +173,6 @@ namespace OposFileSystem
             return;
         }
 
-        /* shifts value from parent to left child */
         public void doLeftShift(TreeNode myNode, int pos)
         {
             int j = 1;
@@ -197,7 +195,7 @@ namespace OposFileSystem
             }
             return;
         }
-        /* merge nodes */
+        
         public void mergeNodes(TreeNode myNode, int pos)
         {
             int j = 1;
@@ -225,7 +223,7 @@ namespace OposFileSystem
             myNode.count--;
 
         }
-        /* adjusts the given node */
+        
         public void adjustNode(TreeNode myNode, int pos)
         {
             if (pos == 0)
@@ -268,7 +266,7 @@ namespace OposFileSystem
                 }
             }
         }
-        /* delete val from the node */
+       
         int delValFromNode(int id, TreeNode myNode)
         {
             int pos, flag = 0;
@@ -319,7 +317,7 @@ namespace OposFileSystem
             }
             return flag;
         }
-        /* delete val from B-tree */
+        
         public void deletion(int id, TreeNode myNode)
         {
             TreeNode tmp;
@@ -340,9 +338,10 @@ namespace OposFileSystem
             root = myNode;
             return;
         }
-        /* search val in B-Tree */
+        
         public void searching(int id, ref int pos, TreeNode myNode, ref MyFile res)
         {
+ 
             if (myNode == null)
             {
                 return;
@@ -358,7 +357,7 @@ namespace OposFileSystem
                     (id < myNode.files[pos].getID() && pos > 1); (pos)--) ;
                 if (id == myNode.files[pos].getID())
                 {
-                    //Console.WriteLine("Given data is Found\n");
+                    
                     res = myNode.files[pos];
                     return;
                 }
@@ -383,7 +382,7 @@ namespace OposFileSystem
                     (id < myNode.files[pos].getID() && pos > 1); (pos)--) ;
                 if (id == myNode.files[pos].getID())
                 {
-                    //Console.WriteLine("Given data is Found\n");
+                    
                     res = myNode;
                     return;
                 }
@@ -391,7 +390,7 @@ namespace OposFileSystem
             searchingForNode(id, ref pos, myNode.link[pos], ref res);
             return;
         }
-        /* B-Tree Traversal */
+       
         public void traversal(TreeNode myNode)
         {
             int i;
